@@ -14,6 +14,7 @@ import { useTheme } from '../../theme/ThemeProvider';
 import { typography } from '../../theme/colors';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import {
+  clearIdempotencyKeys,
   clearLookup,
   clearOperationError,
   lookupRecipient,
@@ -46,6 +47,7 @@ export function SendMoneyScreen() {
     return () => {
       dispatch(clearLookup());
       dispatch(clearOperationError());
+      dispatch(clearIdempotencyKeys());
     };
   }, [dispatch]);
 

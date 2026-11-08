@@ -3,7 +3,7 @@
 ```bash
 cd backend && npm test          # 111 tests / 8 suites
 cd backend && npm run test:coverage
-cd mobile  && npm test          # 53 tests / 7 suites
+cd mobile  && npm test          # 56 tests / 8 suites
 cd backend && npm run typecheck # tsc --noEmit (strict + noUncheckedIndexedAccess)
 cd mobile  && npm run typecheck
 ```
@@ -35,6 +35,7 @@ funding helper) and `tests/setup/*` (env, embedded PostgreSQL lifecycle).
 | `utils/money.test.ts` | Naira formatting across magnitudes, signed amounts, parsing typed/pasted input, rejecting non-amounts, round-tripping, fee rounding |
 | `utils/validation.test.ts` | Email, Nigerian phone normalisation, password strength, weak PIN detection, account numbers, full names |
 | `store/authSlice.test.ts` | Login success/failure transitions, logout and forced sign-out clearing credentials, merging profile updates, theme preference mapping |
+| `store/operationsSlice.test.ts` | An idempotency key is minted once per money operation, reused when a retry follows a lost response, honoured when supplied, and cleared after the movement succeeds |
 | `services/__tests__/client.test.ts` | Envelope unwrapping, query building, error mapping to `ApiError`, network failure handling, idempotency header, single-flight refresh with retry, sign-out when the refresh is rejected |
 | `components/__tests__/AmountInput.test.tsx` | Typed naira → kobo, pasted formatting stripped, invalid input reports zero, formatted hint, maximum warning |
 | `components/__tests__/TransactionRow.test.tsx` | Title/amount/direction rendering, press callback, failure reason instead of timestamp |

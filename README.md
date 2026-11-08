@@ -280,7 +280,7 @@ verification path with a simulated provider.
 
 ```bash
 cd backend && npm test        # 111 tests, 8 suites, real PostgreSQL via embedded-postgres
-cd mobile  && npm test        # 53 tests, 7 suites (Jest + React Native Testing Library)
+cd mobile  && npm test        # 56 tests, 8 suites (Jest + React Native Testing Library)
 cd mobile  && npm run typecheck
 cd backend && npm run typecheck
 ```
@@ -298,7 +298,7 @@ Coverage highlights (see [`docs/testing.md`](docs/testing.md)):
 * **Payments**: verification with matching/mismatching amount and currency, failed and
   pending provider states, webhook signature rejection, duplicate suppression, demo
   channel.
-* **Mobile**: money formatting/parsing, validation rules, auth/settings reducers,
+* **Mobile**: money formatting/parsing, idempotency-key reuse across retries,, validation rules, auth/settings reducers,
   API client (envelope unwrapping, single-flight token refresh, error mapping,
   idempotency header), and the login screen’s validation and submission behaviour.
 

@@ -65,6 +65,24 @@ export const lookupRecipient = createAsyncThunk<
   }
 });
 
+/**
+ * Returns the idempotency key already minted for a scope, or mints and records a
+ * new one. Retries of the same confirmation therefore reuse one key, so a request
+ * that succeeded server-side but whose response was lost can never move money twice.
+ */
+function ensureIdempotencyKey(
+  getState: () => unknown,
+  dispatch: (action: { type: string; payload?: unknown }) => void,
+  scope: string,
+): string {
+  const state = getState() as { operations: OperationsState };
+  const existing = state.operations.pendingIdempotencyKeys[scope];
+  if (existing) return existing;
+  const key = uuid();
+  dispatch(setIdempotencyKey({ scope, key }));
+  return key;
+}
+
 export interface SendTransferInput {
   recipient: { email?: string; phone?: string; walletTag?: string };
   amountMinor: number;
@@ -76,34 +94,40 @@ export const sendTransfer = createAsyncThunk<
   TransferReceipt,
   SendTransferInput,
   { rejectValue: { message: string; code: string | null } }
->('operations/sendTransfer', async (input, { rejectWithValue }) => {
-  // A fresh key per attempt keeps a retry from creating a second transfer.
-  const key = uuid();
+>('operations/sendTransfer', async (input, { dispatch, getState, rejectWithValue }) => {
   try {
-    return await transfersApi.send(input, key);
+    const key = ensureIdempotencyKey(getState, dispatch, 'transfers.create');
+    const result = await transfersApi.send(input, key);
+    dispatch(clearIdempotencyKey('transfers.create'));
+    return result;
   } catch (error) {
+    // The key is intentionally kept on failure: the server only records idempotent
+    // results for successful operations, so a retry can safely reuse it.
     return rejectWithValue(failure(error));
   }
 });
 
 export interface WithdrawInput {
   amountMinor: number;
+  pin: string;
   beneficiaryId?: string;
   bankCode?: string;
   bankName?: string;
   accountName?: string;
   accountNumber?: string;
   narration?: string;
-  pin: string;
 }
 
 export const withdraw = createAsyncThunk<
   WithdrawalResponse,
   WithdrawInput,
   { rejectValue: { message: string; code: string | null } }
->('operations/withdraw', async (input, { rejectWithValue }) => {
+>('operations/withdraw', async (input, { dispatch, getState, rejectWithValue }) => {
   try {
-    return await withdrawalsApi.create(input, uuid());
+    const key = ensureIdempotencyKey(getState, dispatch, 'withdrawals.create');
+    const result = await withdrawalsApi.create(input, key);
+    dispatch(clearIdempotencyKey('withdrawals.create'));
+    return result;
   } catch (error) {
     return rejectWithValue(failure(error));
   }
@@ -162,6 +186,15 @@ const operationsSlice = createSlice({
     },
     clearLookup(state) {
       state.lookup = null;
+    },
+    setIdempotencyKey(state, action: PayloadAction<{ scope: string; key: string }>) {
+      state.pendingIdempotencyKeys[action.payload.scope] = action.payload.key;
+    },
+    clearIdempotencyKey(state, action: PayloadAction<string>) {
+      delete state.pendingIdempotencyKeys[action.payload];
+    },
+    clearIdempotencyKeys(state) {
+      state.pendingIdempotencyKeys = {};
     },
     clearLastResults(state) {
       state.lastTransfer = null;
@@ -252,6 +285,14 @@ const operationsSlice = createSlice({
   },
 });
 
-export const { clearOperationError, clearLookup, clearLastResults, resetOperations } = operationsSlice.actions;
+export const {
+  clearOperationError,
+  clearLookup,
+  clearLastResults,
+  setIdempotencyKey,
+  clearIdempotencyKey,
+  clearIdempotencyKeys,
+  resetOperations,
+} = operationsSlice.actions;
 
 export default operationsSlice.reducer;

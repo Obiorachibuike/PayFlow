@@ -13,7 +13,11 @@ import { EmptyState } from '../../components/EmptyState';
 import { useTheme } from '../../theme/ThemeProvider';
 import { typography } from '../../theme/colors';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { clearOperationError, withdraw } from '../../store/slices/operationsSlice';
+import {
+  clearIdempotencyKeys,
+  clearOperationError,
+  withdraw,
+} from '../../store/slices/operationsSlice';
 import { fetchBeneficiaries } from '../../store/slices/beneficiariesSlice';
 import { fetchTransactions } from '../../store/slices/transactionsSlice';
 import { fetchWallet } from '../../store/slices/walletSlice';
@@ -45,6 +49,10 @@ export function WithdrawScreen() {
 
   useEffect(() => {
     void dispatch(fetchBeneficiaries());
+    return () => {
+      dispatch(clearOperationError());
+      dispatch(clearIdempotencyKeys());
+    };
   }, [dispatch]);
 
   const destination = useMemo(() => {
