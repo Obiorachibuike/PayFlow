@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "PayFlow",
+    "slug": "payflow",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "payflow",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#080B09"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.payflow.app",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "PayFlow uses Face ID as a quick way back into your demo wallet. Your transaction PIN is still required for every payment."
+      }
+    },
+    "android": {
+      "package": "com.payflow.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#080B09"
+      },
+      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT"],
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-local-authentication",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#39FF14"
+        }
+      ]
+    ],
+    "extra": {
+      "apiBaseUrl": "http://localhost:4000",
+      "eas": {
+        "projectId": "00000000-0000-0000-0000-000000000000"
+      }
+    }
+  }
+}
